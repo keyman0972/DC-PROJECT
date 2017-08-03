@@ -10,6 +10,7 @@ import org.hibernate.annotations.NotFoundAction;
 
 import com.ddsc.core.entity.BaseEntity;
 import com.ddsc.km.lab.entity.LabSuppMst;
+import com.ddsc.km.exam.entity.LabDcMst;
 
 /**
  * <table>
@@ -42,13 +43,13 @@ public class LabDcSuppRel extends BaseEntity implements Serializable {
 	private static final long serialVersionUID = -3082263281733268822L;
 	
 	private String dcSuppOid;
-	private String DcId;
+	private LabDcMst labDcMst;
 	private LabSuppMst labSuppMst;
 	
 	@Id
+	@Column (name = "DC_SUPP_OID")
 	@GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column (name = "DC_SUPP_OID")
 	public String getDcSuppOid() {
 		return dcSuppOid;
 	}
@@ -57,15 +58,17 @@ public class LabDcSuppRel extends BaseEntity implements Serializable {
 		this.dcSuppOid = dcSuppOid;
 	}
 	
-	@Column(name="DC_ID")
-	public String getDcId() {
-		return DcId;
+	@OneToOne(targetEntity = LabDcMst.class, fetch = FetchType.LAZY)
+	@NotFound(action = NotFoundAction.IGNORE)
+	@JoinColumn(name = "DC_ID", referencedColumnName = "DC_ID")
+	public LabDcMst getLabDcMst() {
+		return labDcMst;
 	}
 
-	public void setDcId(String dcId) {
-		DcId = dcId;
+	public void setLabDcMst(LabDcMst labDcMst) {
+		this.labDcMst = labDcMst;
 	}
-	
+
 	@OneToOne(targetEntity = LabSuppMst.class, fetch = FetchType.LAZY)
 	@NotFound(action = NotFoundAction.IGNORE)
 	@JoinColumn(name = "SUPP_ID", referencedColumnName = "SUPP_ID")

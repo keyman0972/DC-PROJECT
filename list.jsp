@@ -77,10 +77,10 @@ $(document).ready(function() {
 						<!-- 表單按鍵 --> 
 						<td width="10%"><s:include value="/WEB-INF/pages/include/include.actionButton.jsp" /></td>
 						<!-- 表單按鍵 -->
-						<td width="20%" align="left"><label><s:property value="DC_ID" /></label></td>
-						<td width="22%" align="left"><label><s:property value="DC_NAME" /></label></td>
-						<td width="18%" align="center"><label><s:property value="DC_TIME_PERIOD" /></label></td>	
-						<td width="18%" align="center"><label><s:property value="DC_DIST_AREA" /></label></td>
+						<td width="20%"><label><s:property value="DC_ID" /></label></td>
+						<td width="22%"><label><s:property value="DC_NAME" /></label></td>
+						<td width="18%" align="center"><label><s:property value="DC_TIME_CDE" />&nbsp;-&nbsp;<s:property value="DC_TIME_NAME" /></label></td>	
+						<td width="18%" align="center"><label><s:property value="DC_AREA_CDE" />&nbsp;-&nbsp;<s:property value="DC_AREA_NAME" /></label></td>
 						<td align="center"><label><s:property value="SUPP_COUNT" /></label></td>
 					</tr>
 				 </s:iterator>

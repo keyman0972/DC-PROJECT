@@ -1,5 +1,6 @@
 package com.ddsc.km.exam.service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.ddsc.core.entity.UserInfo;
@@ -7,6 +8,7 @@ import com.ddsc.core.exception.DdscApplicationException;
 import com.ddsc.core.service.IBaseCRUDService;
 import com.ddsc.core.service.IBaseSearchService;
 import com.ddsc.km.exam.entity.LabDcMst;
+import com.ddsc.km.exam.entity.LabDcSuppRel;
 
 /**
  * <table>
@@ -35,4 +37,10 @@ import com.ddsc.km.exam.entity.LabDcMst;
 public interface ILabDcMstService extends IBaseCRUDService<LabDcMst, String>, IBaseSearchService<LabDcMst, String> {
 	
 	public int getDataRowCountByConditions(Map<String, Object> conditions, UserInfo info) throws DdscApplicationException;
+	//AJAX供應商代碼
+	public List<Map<String, Object>> getSuppList(String id,UserInfo userInfo)  throws DdscApplicationException;
+	//AJAX區域、時段
+	public List<Map<String, Object>> getDcTimeArea(String id, UserInfo userInfo) throws DdscApplicationException;
+	//檢核用
+	public LabDcSuppRel getLDSR(String id, UserInfo info) throws DdscApplicationException;
 }

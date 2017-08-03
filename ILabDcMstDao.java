@@ -1,5 +1,6 @@
 package com.ddsc.km.exam.dao;
 
+import java.util.List;
 import java.util.Map;
 
 import com.ddsc.core.dao.IGenericDao;
@@ -34,4 +35,6 @@ import com.ddsc.km.exam.entity.LabDcMst;
 
 public interface ILabDcMstDao extends IGenericDao<LabDcMst, String> {
 	public Pager searchByConditions(Map<String, Object> conditions,Pager pager,UserInfo userInfo) throws DdscApplicationException;
+
+	public List<Map<String, Object>> getDcTimeArea(String id, UserInfo userInfo) throws DdscApplicationException;
 }

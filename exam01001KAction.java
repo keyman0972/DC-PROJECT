@@ -2,8 +2,6 @@ package com.ddsc.km.exam.action;
 
 import java.util.*;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.ddsc.common.comm.entity.CommOptCde;
 import com.ddsc.common.comm.service.ICommOptCdeService;
 import com.ddsc.core.action.AbstractAction;
@@ -15,8 +13,6 @@ import com.ddsc.km.exam.entity.LabDcMst;
 import com.ddsc.km.exam.entity.LabDcSuppRel;
 import com.ddsc.km.exam.service.ILabDcMstService;
 import com.ddsc.km.lab.service.ILabSuppMstService;
-import com.ddsc.km.lab.entity.LabCustMst;
-import com.ddsc.km.lab.entity.LabOrderItem;
 import com.ddsc.km.lab.entity.LabSuppMst;
 
 /**
@@ -63,8 +59,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 	private List<CommOptCde> dcTimePerIodList;			//顯示配送時段 edit.jsp
 	private List<Map<String,Object>> labSuppMstListMap;	//顯示供應商代碼 edit.jsp
 	
-	private String dcTimeCde;
-	private String dcDistArea;
 	@Override
 	public String init() throws Exception {
 		try {
@@ -99,9 +93,9 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 			conditions.put("dcdistArea", areaList);
 			Pager resultPager = getLabDcMstService().searchByConditions(conditions, getPager(), this.getUserInfo());
 			
-			List<Map<String,String>> alist = new ArrayList<Map<String,String>>();
-			alist = (List<Map<String,String>>) resultPager.getData();
-			
+			List<Map<String, String>> alist = new ArrayList<Map<String, String>>();
+			alist = (List<Map<String, String>>) resultPager.getData();
+
 			this.setLabDcMstListMap(alist);
 			setPager(resultPager);
 			
@@ -122,12 +116,12 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 	public String query() throws Exception {
 		try{
 			labDcMst = getLabDcMstService().get(labDcMst.getDcId(), this.getUserInfo());
-//			suppMstList = resLabDcSuppRelList(labDcMst);
-			
+
 		}catch (Exception ex) {
 			DdscApplicationException e = new DdscApplicationException(ex, this.getUserInfo());
 			this.addActionError(this.getText("eP.0022", new String[] {e.getMsgCode(), this.getText(e.getMsgCode()), e.getMsgFullMessage()}));
 		}
+		
 		setNextAction(ACTION_QUERY);
 		return SUCCESS;
 	}
@@ -187,7 +181,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 	public String update() throws Exception {
 		try{
 			labDcMst = labDcMstService.get(labDcMst.getDcId(), this.getUserInfo());
-//			suppMstList = resLabDcSuppRelList(labDcMst);
 		}catch (DdscApplicationException e) {
 			this.addActionError(this.getText("eP.0022", new String[] {e.getMsgCode(), this.getText(e.getMsgCode()), e.getMsgFullMessage()}));
 
@@ -243,7 +236,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 	public String delete() throws Exception {
 		try{
 			labDcMst = labDcMstService.get(labDcMst.getDcId(), this.getUserInfo());
-//			suppMstList = resLabDcSuppRelList(labDcMst);
 			
 		}catch (Exception ex) {
 			DdscApplicationException e = new DdscApplicationException(ex, this.getUserInfo());
@@ -275,7 +267,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 	public String copy() throws Exception {
 		try{
 			labDcMst = labDcMstService.get(labDcMst.getDcId(), this.getUserInfo());
-//			suppMstList = resLabDcSuppRelList(labDcMst);
 		}catch (Exception ex) {
 			DdscApplicationException e = new DdscApplicationException(ex, this.getUserInfo());
 			this.addActionError(this.getText("eP.0022", new String[] {e.getMsgCode(), this.getText(e.getMsgCode()), e.getMsgFullMessage()}));
@@ -315,7 +306,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 			setNextAction(ACTION_COPY);
 			return RESULT_SHOW;
 		}catch (DdscApplicationException e) {
-			// 取得 SQL 錯誤碼，並依多國語系設定顯示於Message box
 			this.addActionError(this.getText("eP.0022", new String[] {e.getMsgCode(), this.getText(e.getMsgCode()), e.getMsgFullMessage()}));
 			setNextAction(ACTION_COPY_SUBMIT);
 			return RESULT_EDIT;
@@ -481,53 +471,31 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 
 			// 檢核供應商是否存在
 			for(int i=0;i<labDcMst.getLabDcSuppRelList().size();i++){
-					
 				suppId = labDcMst.getLabDcSuppRelList().get(i).getLabSuppMst().getSuppId();
+				LabSuppMst labSuppMst = this.getLabSuppMstService().get(suppId, this.getUserInfo());					
+				if(labSuppMst == null){
+					this.addFieldError("suppId", this.getText("suppId") + this.getText("eP.0003"));
+					isValid = false;
+					break;
+				}
+			}
 
-			
-				if(suppId != null){
-					LabSuppMst labSuppMst = this.getLabSuppMstService().get(suppId, this.getUserInfo());
-					
-					if(labSuppMst == null){
-						this.addFieldError("suppId", this.getText("suppId") + this.getText("eP.0003"));
-						isValid = false;
-						break;
-					}
-				}
-			}
-			List<CommOptCde> alist= getDcTimePerIodList();
-			for(CommOptCde comm : alist){
-				if(comm.getOptCdeOid().equals(labDcMst.getDcTimePeriod())){
-					dcTimeCde = comm.getOptCde();
-				}
-				
-			}
-			List<CommOptCde> blist= getDcDistAreaList();
-			for(CommOptCde comm : blist){
-				if(comm.getOptCde().equals(labDcMst.getDcDistArea())){
-					
-					dcDistArea = comm.getOptCde();
-				}
-			}
 			// 檢查參數代碼是否存在 (時段)
-			if (null != dcTimeCde && StringUtils.isNotBlank(dcTimeCde)) {
-				CommOptCde dcTime = getCommOptCdeService().getByKey("DC01", dcTimeCde, this.getUserInfo());
-				if (dcTime == null) {
-					this.addFieldError("dcTimePeriod", this.getText("dcTimePeriod")+ this.getText("eP.0003"));
-					isValid = false;
-				}
-			} else {
-				labDcMst.setDcTimePeriod(null);
+			CommOptCde dcTime = getCommOptCdeService().getByKey("DC01", labDcMst.getDcTimePerIod().getOptCde(), this.getUserInfo());
+			if (dcTime == null) {
+				this.addFieldError("dcTimePeriod", this.getText("dcTimePeriod")+ this.getText("eP.0003"));
+				isValid = false;
+			}else{
+				labDcMst.setDcTimePerIod(dcTime);
 			}
+				
 			// 檢查參數代碼是否存在 (區域)
-			if (null != dcDistArea && StringUtils.isNotBlank(dcDistArea)) {
-				CommOptCde dcArea = getCommOptCdeService().getByKey("DC02", dcDistArea, this.getUserInfo());
-				if (dcArea == null) {
-					this.addFieldError("dcDistArea", this.getText("dcDistArea")+ this.getText("eP.0003"));
-					isValid = false;
-				}
-			} else {
-				labDcMst.setDcDistArea(null);
+			CommOptCde dcArea = getCommOptCdeService().getByKey("DC02", labDcMst.getDcDistArea(), this.getUserInfo());
+			if (dcArea == null) {
+				this.addFieldError("dcDistArea", this.getText("dcDistArea")+ this.getText("eP.0003"));
+				isValid = false;
+			}else{
+				labDcMst.setDcDistArea(dcArea.getOptCde());
 			}
 		}catch (DdscApplicationException e) {
 			this.addActionError(this.getText("eP.0022", new String[] {e.getMsgCode(), this.getText(e.getMsgCode()), e.getMsgFullMessage()}));
@@ -545,47 +513,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 //		}
 		return alist;
 	}
-	
-	//request
-//	public List<LabDcSuppRel> reqLabDcSuppRelList(List<String> alist){
-//		List<LabDcSuppRel> labDcSuppRellist = new  ArrayList<LabDcSuppRel>();
-//		LabDcSuppRel labDcSuppRel;
-//		LabSuppMst labSuppMst;
-//		for(String suppId:alist){
-//			if(suppId!= null){
-//				labDcSuppRel = new LabDcSuppRel();
-//				labSuppMst = new LabSuppMst();
-//				labSuppMst.setSuppId(suppId);
-//				labDcSuppRel.setDcId(this.getLabDcMst().getDcId());
-//				labDcSuppRel.setLabSuppMst(labSuppMst);
-//				
-//				labDcSuppRellist.add(labDcSuppRel);
-//			}
-//			
-//		}
-//		return labDcSuppRellist;
-//	}
-	//response
-//	private List<String> resLabDcSuppRelList(LabDcMst labDcMst){
-//		List<Map<String, Object>> dbList = this.getLabSuppMstListMap();
-//		List<String> suppMstList = new ArrayList<String>();
-//		boolean bool;
-//		for(int i = 0; i < dbList.size(); i++){
-//			bool = false;
-//			for(LabDcSuppRel labDcSuppRel : labDcMst.getLabDcSuppRelList()){
-//				if((labDcSuppRel.getLabSuppMst().getSuppId()).equals(dbList.get(i).get("SUPP_ID"))){
-//					bool = true;
-//				}
-//			}
-//			if(bool){
-//				suppMstList.add(i, (String) dbList.get(i).get("SUPP_ID"));
-//			}else{
-//				suppMstList.add(i, null);
-//			}
-//		}
-//
-//		return suppMstList;
-//	}
 	
 	public List<CommOptCde> getDcDistAreaList() {
 		if(dcDistAreaList == null){
@@ -683,7 +610,6 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 			Map<String,String> aMap = new HashMap<String,String>();
 			String suppId;
 			for(int i=0;i<labDcMst.getLabDcSuppRelList().size();i++){
-				
 				suppId = labDcMst.getLabDcSuppRelList().get(i).getLabSuppMst().getSuppId();
 				aMap.put(suppId, "Y");
 			}
@@ -692,32 +618,16 @@ public class exam01001KAction extends AbstractAction implements IBaseAction {
 		
 		return checkedSuppIdMap;
 	}
-
+	
 	public void setCheckedSuppIdMap(Map<String, String> checkedSuppIdMap) {
 		this.checkedSuppIdMap = checkedSuppIdMap;
 	}
-	
+
 	public List<String> getEditDistAreaList() {
 		return editDistAreaList;
 	}
 
 	public void setEditDistAreaList(List<String> editDistAreaList) {
 		this.editDistAreaList = editDistAreaList;
-	}
-
-	public String getDcTimeCde() {
-		return dcTimeCde;
-	}
-
-	public void setDcTimeCde(String dcTimeCde) {
-		this.dcTimeCde = dcTimeCde;
-	}
-
-	public String getDcDistArea() {
-		return dcDistArea;
-	}
-
-	public void setDcDistArea(String dcDistArea) {
-		this.dcDistArea = dcDistArea;
 	}
 }

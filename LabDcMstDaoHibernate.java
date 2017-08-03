@@ -48,15 +48,12 @@ public class LabDcMstDaoHibernate extends GenericDaoHibernate<LabDcMst,String> i
 		String optCdeNam_lang = LocaleDataHelper.getPropertityWithLocalUpper("OPT_CDE_NAM", userInfo.getLocale());
 		
 		StringBuffer sbsql = new StringBuffer();
-		sbsql.append("SELECT DC.DC_ID, DC.DC_NAME, DC.DC_TEL, DC.DC_ADDR, ");
-		sbsql.append("OPT1." + optCdeNam_lang + " AS DC_TIME_PERIOD, ");
-		sbsql.append("OPT2." + optCdeNam_lang + " AS DC_DIST_AREA, REL2.SUPP_COUNT ");
+		sbsql.append("SELECT DC.DC_ID, DC.DC_NAME, DC.DC_TEL, DC.DC_ADDR, DC.DC_TIME_PERIOD, DC.DC_DIST_AREA, ");
+		sbsql.append("OPT1." + optCdeNam_lang + " AS DC_TIME_NAME, OPT1.OPT_CDE AS DC_TIME_CDE, ");
+		sbsql.append("OPT2." + optCdeNam_lang + " AS DC_AREA_NAME, OPT2.OPT_CDE AS DC_AREA_CDE, COUNT(REL.SUPP_ID) AS SUPP_COUNT ");
 		sbsql.append("FROM LAB_DC_MST DC ");
-		sbsql.append("LEFT JOIN LAB_DC_SUPP_REL REL ON (DC.DC_ID = REL.DC_ID) ");
-		sbsql.append("LEFT JOIN ( ");
-		sbsql.append("SELECT DC_ID, COUNT(SUPP_ID) AS SUPP_COUNT FROM LAB_DC_SUPP_REL GROUP BY DC_ID ");
-		sbsql.append(") REL2 ON (REL.DC_ID = REL2.DC_ID) ");
-		sbsql.append("LEFT JOIN COMM_OPT_CDE OPT1 ON (DC.DC_TIME_PERIOD = OPT1.OPT_CDE_OID)  ");
+		sbsql.append("INNER JOIN LAB_DC_SUPP_REL REL ON (DC.DC_ID = REL.DC_ID) ");
+		sbsql.append("INNER JOIN COMM_OPT_CDE OPT1 ON (DC.DC_TIME_PERIOD = OPT1.OPT_CDE_OID AND OPT1.OPT_CTG_CDE = 'DC01')  ");
 		sbsql.append("INNER JOIN COMM_OPT_CDE OPT2 ON (DC.DC_DIST_AREA = OPT2.OPT_CDE AND OPT2.OPT_CTG_CDE = 'DC02')  ");
 
 		String keyword = "WHERE ";
@@ -83,7 +80,7 @@ public class LabDcMstDaoHibernate extends GenericDaoHibernate<LabDcMst,String> i
 			keyword = "AND ";
 		}
 		
-		sbsql.append("GROUP BY DC.DC_ID, DC.DC_NAME, DC.DC_TEL, DC.DC_ADDR, DC.DC_DIST_AREA, OPT1." + optCdeNam_lang + ", OPT2." + optCdeNam_lang + ",  REL2.SUPP_COUNT ");
+		sbsql.append("GROUP BY DC.DC_ID, DC.DC_NAME, DC.DC_TEL, DC.DC_ADDR, DC_TIME_PERIOD, DC.DC_DIST_AREA, OPT1." + optCdeNam_lang + ", OPT2." + optCdeNam_lang + ", OPT1.OPT_CDE, OPT2.OPT_CDE ");
 		sbsql.append("ORDER BY DC.DC_ID ");
 		
 		// 建立List<HibernateScalarHelper> scalarList = new ArrayList<HibernateScalarHelper>(); 並add
@@ -94,10 +91,45 @@ public class LabDcMstDaoHibernate extends GenericDaoHibernate<LabDcMst,String> i
 		scalarList.add(new HibernateScalarHelper("DC_ADDR", Hibernate.STRING));
 		scalarList.add(new HibernateScalarHelper("DC_TIME_PERIOD", Hibernate.STRING));
 		scalarList.add(new HibernateScalarHelper("DC_DIST_AREA", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_TIME_NAME", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_TIME_CDE", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_AREA_NAME", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_AREA_CDE", Hibernate.STRING));
 		scalarList.add(new HibernateScalarHelper("SUPP_COUNT", Hibernate.STRING));
 		
 		// 回傳
 		return super.findBySQLQueryMapPagination(sbsql.toString(), pager, scalarList, value, userInfo);
+	}
+	
+	@Override
+	public List<Map<String, Object>> getDcTimeArea(String id, UserInfo userInfo) throws DdscApplicationException{
+		
+		String optCdeNam_lang = LocaleDataHelper.getPropertityWithLocalUpper("OPT_CDE_NAM", userInfo.getLocale());
+		
+		StringBuffer sbsql = new StringBuffer();
+		sbsql.append("SELECT LDM.DC_ID, LDM.DC_NAME, OPT1.OPT_CDE AS DC_TIME_CDE, OPT1."+optCdeNam_lang+" AS DC_TIME_NAME, ");
+		sbsql.append("	OPT2.OPT_CDE AS DC_AREA_CDE, OPT2."+optCdeNam_lang+" AS DC_AREA_NAME ");
+		sbsql.append("FROM LAB_DC_MST LDM ");
+		sbsql.append("INNER JOIN COMM_OPT_CDE OPT1 ON (LDM.DC_TIME_PERIOD = OPT1.OPT_CDE_OID AND OPT1.OPT_CTG_CDE = 'DC01') ");
+		sbsql.append("INNER JOIN COMM_OPT_CDE OPT2 ON (LDM.DC_DIST_AREA = OPT2.OPT_CDE AND OPT2.OPT_CTG_CDE = 'DC02')  ");
+		
+		String keyword = "WHERE ";
+		List<Object> value = new ArrayList<Object>();
+		if (StringUtils.isNotEmpty(id)) {
+			sbsql.append(keyword + "LDM.DC_ID = ? ");
+			value.add(id);
+			keyword = "AND ";
+		}
+		
+		List<HibernateScalarHelper> scalarList = new ArrayList<HibernateScalarHelper>();
+		scalarList.add(new HibernateScalarHelper("DC_ID", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_NAME", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_TIME_CDE", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_TIME_NAME", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_AREA_CDE", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_AREA_NAME", Hibernate.STRING));
+		
+		return super.findBySQLQueryMap(sbsql.toString(), scalarList, value, userInfo);
 	}
 
 }

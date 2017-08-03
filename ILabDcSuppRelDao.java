@@ -33,5 +33,8 @@ import com.ddsc.km.exam.entity.LabDcSuppRel;
  */
 
 public interface ILabDcSuppRelDao extends IGenericDao<LabDcSuppRel, String> {
+	
 	public List<LabDcSuppRel> getList(String id,UserInfo info) throws DdscApplicationException;
+	
+	public List<Map<String, Object>> getSuppIdList(String id,UserInfo info) throws DdscApplicationException;
 }

@@ -1,7 +1,6 @@
 package com.ddsc.km.exam.service.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,11 +52,13 @@ public class LabDcMstServiceImpl implements ILabDcMstService {
 			labDcMstDao.save(entity, info);
 			String dcId = entity.getDcId();
 			LabSuppMst labSuppMstPo;
+			LabDcMst labDcMstPo;
 			for(LabDcSuppRel labDcSuppRel:entity.getLabDcSuppRelList()){
 				labSuppMstPo = new LabSuppMst();
 				labSuppMstPo = this.getLabSuppMstService().get(labDcSuppRel.getLabSuppMst().getSuppId(), info);
-				
-				labDcSuppRel.setDcId(dcId);
+				labDcMstPo = new LabDcMst();
+				labDcMstPo = this.getLabDcMstDao().get(dcId, info);
+				labDcSuppRel.setLabDcMst(labDcMstPo);
 				labDcSuppRel.setLabSuppMst(labSuppMstPo);
 				this.labDcSuppRelDao.save(labDcSuppRel, info);	
 
@@ -89,19 +90,23 @@ public class LabDcMstServiceImpl implements ILabDcMstService {
 				//全部移除
 				for(LabDcSuppRel labDcSuppRel:labDcMstPo.getLabDcSuppRelList()){
 					this.getLabDcSuppRelDao().delete(labDcSuppRel, info);
+					this.getLabDcSuppRelDao().flush();
 				}
 				//全部新增
 				for(LabDcSuppRel labDcSuppRel:entity.getLabDcSuppRelList()){
 					if(labDcSuppRel!= null){
 						LabSuppMst labDcSuppMstPo = this.getLabSuppMstService().get(labDcSuppRel.getLabSuppMst().getSuppId(), info);
-						labDcSuppRel.setDcId(entity.getDcId());
+						
+						labDcSuppRel.setLabDcMst(this.getLabDcMstDao().get(entity.getDcId(), info));
+						
 						labDcSuppRel.setLabSuppMst(labDcSuppMstPo);
 						this.getLabDcSuppRelDao().save(labDcSuppRel, info);						
 					}
 				}
-				
+
 				BeanUtilsHelper.copyProperties(labDcMstPo, entity, entity.obtainLocaleFieldNames());
-				return this.getLabDcMstDao().update(labDcMstPo, info);
+				this.getLabDcMstDao().update(labDcMstPo, info);
+				return labDcMstPo;
 				
 			}else {
 				throw new DdscApplicationException(DdscApplicationException.DDSCEXCEPTION_TYPE_ERROR, "eP.0013");
@@ -121,13 +126,13 @@ public class LabDcMstServiceImpl implements ILabDcMstService {
 			LabDcMst labDcMstPo = getLabDcMstDao().get(entity.getDcId(), info);
 			if(labDcMstPo.getVer().getTime()==entity.getVer().getTime()){
 				List<LabDcSuppRel> labDcSuppRelList = this.getLabDcSuppRelDao().getList(labDcMstPo.getDcId(), info);
-				
 				for(LabDcSuppRel labDcSuppRelPo:labDcSuppRelList){
+					
 					this.getLabDcSuppRelDao().delete(labDcSuppRelPo, info);
-					this.getLabDcSuppRelDao().flush();
 				}
-				
 				this.getLabDcMstDao().delete(labDcMstPo, info);
+				this.getLabDcSuppRelDao().flush();
+				this.getLabDcMstDao().flush();
 				return labDcMstPo;				
 			}else {
 				throw new DdscApplicationException(DdscApplicationException.DDSCEXCEPTION_TYPE_ERROR,"eP.0013");
@@ -144,7 +149,7 @@ public class LabDcMstServiceImpl implements ILabDcMstService {
 	public LabDcMst get(String id, UserInfo info) throws DdscApplicationException {
 		try{
 			
-			LabDcMst labDcMst = this.getLabDcMstDao().get(id, info);
+			LabDcMst labDcMst = this.getLabDcMstDao().get(id, info);			
 			
 			List<LabDcSuppRel> labSuppDcRel = this.getLabDcSuppRelDao().getList(id, info);
 			
@@ -197,8 +202,40 @@ public class LabDcMstServiceImpl implements ILabDcMstService {
 
 	}
 	
+	public List<Map<String, Object>> getSuppList(String id,UserInfo userInfo)  throws DdscApplicationException{
+		try{
+			return this.getLabDcSuppRelDao().getSuppIdList(id, userInfo);
+		}catch (DdscApplicationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new DdscApplicationException(e, userInfo);
+		}
+	}
+	
+	public List<Map<String, Object>> getDcTimeArea(String id, UserInfo userInfo) throws DdscApplicationException{
+		try{
+			return this.getLabDcMstDao().getDcTimeArea(id, userInfo);
+		}catch (DdscApplicationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new DdscApplicationException(e, userInfo);
+		}
+	}
 	
 	
+
+	public LabDcSuppRel getLDSR(String id, UserInfo info) throws DdscApplicationException {
+		try{
+			
+			LabDcSuppRel labDcSuppRel = this.getLabDcSuppRelDao().get(id, info);
+			
+			return labDcSuppRel;			
+		}catch (DdscApplicationException e) {
+			throw e;
+		}catch (Exception e) {
+			throw new DdscApplicationException(e, info);
+		}
+	}
 	
 	public ILabDcMstDao getLabDcMstDao() {
 		return labDcMstDao;

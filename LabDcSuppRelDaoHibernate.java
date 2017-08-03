@@ -5,10 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
 
 import com.ddsc.core.dao.hibernate.GenericDaoHibernate;
 import com.ddsc.core.entity.UserInfo;
 import com.ddsc.core.exception.DdscApplicationException;
+import com.ddsc.core.util.HibernateScalarHelper;
+import com.ddsc.core.util.LocaleDataHelper;
 import com.ddsc.km.exam.dao.ILabDcSuppRelDao;
 import com.ddsc.km.exam.entity.LabDcSuppRel;
 
@@ -48,13 +53,39 @@ public class LabDcSuppRelDaoHibernate extends GenericDaoHibernate<LabDcSuppRel,S
 		
 		String keyword = "where ";
 		if(StringUtils.isNotEmpty(id)){
-			sbsql.append(keyword + "rel.dcId = ? ");
-			values.add((String) id);
-			keyword = "and";
+			sbsql.append(keyword + "rel.labDcMst.dcId = ? ");
+			values.add(id);
+			keyword = "and ";
 		}
 		
-		return super.findByHQLString(sbsql.toString(), values, info) ;
-	}
+		return super.findByHQLString(sbsql.toString(), values, info);
+	}	
+	
+	@Override
+	public List<Map<String, Object>> getSuppIdList(String id, UserInfo userInfo) throws DdscApplicationException {
+		
+		String suppName_lang = LocaleDataHelper.getPropertityWithLocalUpper("SUPP_NAME", userInfo.getLocale());
+		List<Object> values = new ArrayList<Object>();
+		StringBuffer sbsql = new StringBuffer();
+		sbsql.append("SELECT REL.DC_SUPP_OID, REL.DC_ID,REL.SUPP_ID, ");
+		sbsql.append("LSM."+suppName_lang+" AS SUPP_NAME ");
+		sbsql.append("FROM LAB_DC_SUPP_REL REL ");
+		sbsql.append("INNER JOIN LAB_SUPP_MST LSM ON (REL.SUPP_ID = LSM.SUPP_ID) ");
+		
+		String keyword = "WHERE ";
+		if(StringUtils.isNotEmpty(id)){
+			sbsql.append(keyword + "REL.DC_ID = ? ");
+			values.add(id);
+			keyword = "and";
+		}
+		List<HibernateScalarHelper> scalarList = new ArrayList<HibernateScalarHelper>();
+		scalarList.add(new HibernateScalarHelper("DC_SUPP_OID", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("DC_ID", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("SUPP_ID", Hibernate.STRING));
+		scalarList.add(new HibernateScalarHelper("SUPP_NAME", Hibernate.STRING));
+
+	return super.findBySQLQueryMap(sbsql.toString(), scalarList, values, userInfo);
+}
 	
 	
 }

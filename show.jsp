@@ -50,23 +50,18 @@ $(document).ready(function() {
 				</td>
 				<td width="20%" class="colNameAlign">&nbsp;<s:text name="dcTimePeriod" />：</td>
 				<td width="30%">
-					<s:iterator value="dcTimePerIodList" status="status" var="obj">
-						<s:if test="labDcMst.dcTimePeriod == optCdeOid">
-							<s:property value="#obj.optCde"/>-<s:property value=" #obj.optCdeNam"/>
-						</s:if>
-					</s:iterator>
+					<s:property value="labDcMst.dcTimePerIod.optCde"/>-<s:property value="labDcMst.dcTimePerIod.optCdeNam"/>
 				</td>
 			</tr>
 			<tr class="trBgEven">
 				<td width="20%" class="colNameAlign">&nbsp;<s:text name="dcDistArea" />：</td>
 				<td colspan="3">
-					<span>
-						<s:iterator value="dcDistAreaList" status="status" >
-							<input type="radio" id="dcDistAreaList_<s:property value="#status.index" />" name="labDcMst.dcDistArea" value="optCde"
-							disabled <s:if test="labDcMst.dcDistArea == optCde">checked</s:if> />						
-							<s:property value="optCdeNam" />						
-						</s:iterator>
-					</span>
+					<s:iterator value="dcDistAreaList" status="status" >
+						<input type="radio" id="dcDistArea_<s:property value="#status.index" />" 
+							    name="labDcMst.dcDistArea" value="<s:property value="optCde" />"
+								disabled <s:if test="labDcMst.dcDistArea == optCde">checked</s:if> />						
+						<s:property value="optCdeNam" />
+					</s:iterator>
 				</td>
 			</tr>
 			<tr class="trBgOdd">

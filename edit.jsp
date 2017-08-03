@@ -64,8 +64,8 @@ $(document).ready(function(){
 				</td>
 				<td width="20%" class="colNameAlign">&nbsp;<s:text name="dcTimePeriod" />：</td>
 				<td width="30%">
-					<s:select id="dcTimePeriod" name="labDcMst.dcTimePeriod" headerValue="%{getText('fix.00162')}" headerKey=""
-					list="dcTimePerIodList" listKey="optCdeOid" listValue="optCde + '-' + optCdeNam" />
+					<s:select id="dcTimePeriod" name="labDcMst.dcTimePerIod.optCde" headerValue="%{getText('fix.00162')}" headerKey=""
+					list="dcTimePerIodList" listKey="optCde" listValue="optCde + '-' + optCdeNam" value="labDcMst.dcTimePerIod.optCde" />
 				</td>
 			</tr>
 			<tr class="trBgEven">
@@ -77,7 +77,6 @@ $(document).ready(function(){
 								    name="labDcMst.dcDistArea" value="<s:property value="optCde" />"
 									<s:if test="labDcMst.dcDistArea == optCde">checked</s:if> />						
 							<s:property value="optCdeNam" />
-							
 						</s:iterator>
 					</span>
 				</td>
@@ -89,10 +88,8 @@ $(document).ready(function(){
 						<s:iterator value="labSuppMstListMap" status="status" var="obj" >
 							<input type="checkbox" 
 								id="suppId_<s:property value="#status.index" />" 
-<%-- 								name="suppMstList[<s:property value="#status.index" />]" --%>
 								name="labDcMst.labDcSuppRelList[<s:property value="#status.index" />].labSuppMst.suppId"
 								value="<s:property value="#obj.SUPP_ID" />" 
-<%--  								<s:if test="suppMstList[#status.index] == #obj.SUPP_ID">checked</s:if> --%>
 								<s:if test="checkedSuppIdMap.get(#obj.SUPP_ID) != null">checked</s:if>
 								 />					
 							<label><s:property value="#obj.SUPP_NAME" /></label>					
